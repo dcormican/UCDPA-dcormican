@@ -81,7 +81,6 @@ print(df.describe())
 missing = df[df['Registration'].isnull()]  #change to check different columns
 print(missing.head(20))
 
-exit()
 
 # ====================
 # ANALYSE DATA SECTION
@@ -165,6 +164,8 @@ plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Aircraft Type")
 plt.show()
 
+print(grouped)
+
 # Bar Chart with 25 lowest Block to Air time variance by aircraft types
 grouped = df[['Aircraft_type','BLOCK_FLIGHT_VARIANCE']].groupby(['Aircraft_type']).mean()
 grouped = grouped.nsmallest(25,['BLOCK_FLIGHT_VARIANCE'])
@@ -175,6 +176,7 @@ plt.title("25 Lowest Block to Air time variance by Aircraft Type", fontsize=14)
 plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Aircraft Type")
 plt.show()
+print(grouped)
 
 # Block to Air time mean variance by Aircraft Family
 # Bar Chart with 25 highest Block to Air time variance by aircraft Family
@@ -188,6 +190,7 @@ plt.title("25 Highest Block to Air time variance by Aircraft Family", fontsize=1
 plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Aircraft Family")
 plt.show()
+print(grouped)
 
 # Bar Chart with 25 lowest Block to Air time variance by aircraft Family
 grouped = df[['Aircraft_family','BLOCK_FLIGHT_VARIANCE']].groupby(['Aircraft_family']).mean()
@@ -199,6 +202,7 @@ plt.title("25 Lowest Block to Air time variance by Aircraft Family", fontsize=14
 plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Aircraft Family")
 plt.show()
+print(grouped)
 
 # Block to Air time mean variance by Airline
 # Bar Chart with 25 highest Block to Air time variance by Airline
@@ -211,6 +215,7 @@ plt.title("25 Highest Block to Air time variance by Airline", fontsize=14)
 plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Airline")
 plt.show()
+print(grouped)
 
 # Bar Chart with 25 lowest Block to Air time variance by Airline
 grouped = df[['AIRLINE','BLOCK_FLIGHT_VARIANCE']].groupby(['AIRLINE']).mean()
@@ -222,6 +227,7 @@ plt.title("25 Lowest Block to Air time variance by Airline", fontsize=14)
 plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Airline")
 plt.show()
+print(grouped)
 
 
 # Block to Air time mean variance by Route (origin airport)
@@ -235,6 +241,7 @@ plt.title("25 Highest Block to Air time variance by Route (Origin Airport)", fon
 plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Route (Origin Airport)")
 plt.show()
+print(grouped)
 
 # Bar Chart with 25 lowest Block to Air time variance by Route (origin airport)
 grouped = df[['ORIGIN_AIRPORT','BLOCK_FLIGHT_VARIANCE']].groupby(['ORIGIN_AIRPORT']).mean()
@@ -246,6 +253,7 @@ plt.title("25 Lowest Block to Air time variance by Route (Origin Airport)", font
 plt.ylabel("Variance of Block to Flight Time (minutes)")
 plt.xlabel("Route (Origin Airport)")
 plt.show()
+print(grouped)
 
 
 # ===================================
@@ -256,21 +264,24 @@ plt.show()
 # For the purpose of the assessment I am generating a random list of ID's and using this to extract a 'simulated fleet' of aircraft
 #
 
-# Generate 150 random numbers between 1 and 2000
-randomlist = random.sample(range(10, 2000), 25)
+# Generate random numbers between 1 and 500000
+randomlist = random.sample(range(10, 500000), 3500)
 print(randomlist)
 
-# Using the random list to generate a fleet of aircraft up to 150 and use this to select against ID_x
+# Using the random list to generate a random fleet of aircraft  and use this to select against flights
 # This will be replaced by my company's actual fleet after the assessment
-myfleet = df.loc[df['ID_x'].isin(randomlist)]
-print(myfleet)
+myfleet = aircraft.loc[aircraft['ID'].isin(randomlist)]
+print('==================================MY FLEET===================================')
+print(myfleet.info())
+myfleet_flights = df.loc[df['TAIL_NUMBER'].isin(myfleet['Registration'])]
+print(myfleet_flights)
 
 # Not using as part of the assessment but used in testing. This is hitting a corporate DB so obviously can't include here
 #from OracleDatabaseAccess import getoracledataset
 #myfleet = getoracledataset('***add fleetview here***')
 
-
-monthly_hours = myfleet[['TAIL_NUMBER', 'MONTH', 'AIR_TIME']].groupby(['TAIL_NUMBER', 'MONTH']).sum()
+# Quick check on monthly utilisation by fleet sample
+monthly_hours = myfleet_flights[['TAIL_NUMBER', 'MONTH', 'AIR_TIME']].groupby(['TAIL_NUMBER', 'MONTH']).sum()
 print(monthly_hours)
 monthly_hours.plot(kind="line", figsize=(14, 9), )    # set horizontal bar chart and size
 #######plt.legend(['Block to Flight time Variance'], loc='upper right')
@@ -280,6 +291,18 @@ plt.ylabel("Flight Time (minutes)")
 plt.xlabel("Aircraft")
 plt.show()
 
+
+#Sample of full fleet for Jan
+df_month = df.loc[df['MONTH'] == 1]
+monthly_hours = df_month[['TAIL_NUMBER', 'MONTH', 'AIR_TIME']].groupby(['TAIL_NUMBER', 'MONTH']).sum()
+print(monthly_hours)
+monthly_hours.plot(kind="line", figsize=(14, 9), )    # set horizontal bar chart and size
+#######plt.legend(['Block to Flight time Variance'], loc='upper right')
+plt.legend('', frameon=False)  # hide legend
+plt.title("My Fleet - Monthly Aircraft Utilisation", fontsize=14)
+plt.ylabel("Flight Time (minutes)")
+plt.xlabel("Aircraft")
+plt.show()
 
 
 
@@ -300,7 +323,7 @@ ax[0].legend(ncol = 2, loc = 'lower right')
 ax[1].legend(ncol = 2, loc = 'lower right')
 plt.show()
 
-print('Status represents wether the flight was on time (0), slightly delayed (1), highly delayed (2), diverted (3), or cancelled (4)')
+print('Status : flight was on time (0), slightly delayed (1), highly delayed (2), diverted (3), or cancelled (4)')
 
 # Display a visual of cancelled flights
 cancelled_flights = df[(df.DELAY_STATUS == 4)]
